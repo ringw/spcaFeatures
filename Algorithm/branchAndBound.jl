@@ -376,6 +376,7 @@ function branchAndBound(prob, #problem object
 		oldub = upper_bounds[selected_node]
 		for i = 1:numBranches
 			lb, ub = return_bounds(newNodes[:,i], oldub)
+			@assert (ub - lb) / ub >= -0.001 "Expect $ub > $lb (gap $((ub - lb) / ub))"
 			if ub*(1-gap) > lower
 				if lb > lower
 					lower = lb
