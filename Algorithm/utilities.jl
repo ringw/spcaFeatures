@@ -106,11 +106,10 @@ function Hk(origlist, sparsity, support)
 	list = real(copy(origlist))
 	ksparse = zeros(length(list))
 	indicesToKeep = (support.==1)
-	dummyvalue = minimum(list)-1
-	list[(support.>-1)] .= dummyvalue
+	candidateInds = findall(support .== -1)
 
-	newIndices = selectperm2(list, sparsity-sum(indicesToKeep))
-	indicesToKeep[newIndices].=true
+	newIndices = selectperm2(list[candidateInds], sparsity-sum(indicesToKeep))
+	indicesToKeep[candidateInds[newIndices]].=true
 
 	ksparse[indicesToKeep]=origlist[indicesToKeep]
 
