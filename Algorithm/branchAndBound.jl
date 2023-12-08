@@ -2,7 +2,7 @@ using LinearAlgebra, Printf, Arpack
 function branchAndBound(prob, #problem object
 		K; # target sparsity
 		outputFlag = 3, # 1, 2, or 3 depending on level of detail sought in output
-		timeCap = 3600, #maximum time in seconds
+		searchCap = 500000, # Search this number of nodes before quitting
 		warmStart = zeros(1), #warm start vector
 
 		maxDepth = 1000, #maximum number of active nodes in the tree
@@ -265,7 +265,7 @@ function branchAndBound(prob, #problem object
 
 	# Uses the Yuan algorithm to generate a warm start if none was provided
 	if length(warmStart)==1
-		~, warmStart = subset(prob, K, timeLimit = max(20,timeCap/100))
+		~, warmStart = subset(prob, K, timeLimit = 10)
 	end
 
 
@@ -302,14 +302,23 @@ function branchAndBound(prob, #problem object
 	explored = 0
 	lower_revised = 0
 	best_node = (warmStart.!=0)*1
+	
+	numProgress = 10
+	progressMarkers = round.(range(0, stop = searchCap, length = numProgress+1))[2:numProgress+1]
 
 	#Initializes output
-	println(" Nodes,   Left,  Objective,  Incumbent,       Gap(%),   Runtime(s)")
+	if outputFlag >= 1
+		println(" Nodes,   Left,  Objective,  Incumbent,       Gap(%),   Runtime(s)")
+	end
 	toPrint=[Printf.@sprintf("%6d, %6d, %10f, %10f, %10.3f %%, %10.3f s \n", num_nodes, explored, upper, lower, (upper-lower)/(1e-10+upper)*100, time()-start)]
 	printtime = time()
 
-	while (upper - lower)/upper > gap  && time()-start < timeCap
+	while (upper - lower)/upper > gap  && explored < searchCap
 		explored = explored + 1
+
+		if outputFlag == 0 && explored in progressMarkers
+			print(".")
+		end
 
 		# Occasionally print updates and risize arrays
 		if lower_revised == 1 || size(nodes)[2]-num_nodes < K+5 || explored < 100
@@ -416,7 +425,7 @@ function branchAndBound(prob, #problem object
 
 	# records whether the algorithm timed out
 	timeOut = false
-	if time()-start > timeCap
+	if explored >= searchCap
 		timeOut = true
 	end
 
@@ -439,6 +448,10 @@ function branchAndBound(prob, #problem object
 	xVal[yKeep] = eig_soln
 
 	final_gap = max(0,(upper-lower)/(1e-10+upper)*100)
+
+	if outputFlag == 0
+		print("\n")
+	end
 
 	return obj, # objective value
 			xVal, # best feasible solution

@@ -10,13 +10,13 @@ function projectMatrix(sig, xVal)
 end
 
 
-function multiOptimalSPCA(prob, k, ncomp)
+function multiOptimalSPCA(prob, k, ncomp, searchCap=500000)
 	myprob = problem(copy(prob.data),copy(prob.Sigma))
 	st = time()
 	all_x = zeros(ncomp, size(myprob.Sigma,1))
 
 	for rnd = 1:ncomp
-		~, xVal, ~, ~, ~, ~, ~ = branchAndBound(myprob, k, outputFlag=0, timeCap = 60) ;
+		~, xVal, ~, ~, ~, ~, ~ = branchAndBound(myprob, k, outputFlag=0, searchCap=searchCap) ;
 		all_x[rnd,:] = xVal
 
 		myprob.Sigma = projectMatrix(myprob.Sigma, xVal)
