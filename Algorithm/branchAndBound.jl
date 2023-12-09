@@ -303,8 +303,8 @@ function branchAndBound(prob, #problem object
 	lower_revised = 0
 	best_node = (warmStart.!=0)*1
 	
-	numProgress = 10
-	progressMarkers = round.(range(0, stop = searchCap, length = numProgress+1))[2:numProgress+1]
+	numProgress = 20
+	progressMarkers = Set(round.(range(0, stop = searchCap, length = numProgress+1))[2:numProgress+1])
 
 	#Initializes output
 	if outputFlag >= 1
