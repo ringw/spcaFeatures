@@ -46,7 +46,8 @@ myprob = problem(zeros(size(Sigma)), Sigma)
 for i = 1:D
     # data = repeat([0.0], length(genes))
     ~, xVal = branchAndBound(
-        myprob, K, outputFlag=0, gap=eigenGap, searchCap=searchCap
+        myprob, K, outputFlag=0, gap=eigenGap, searchCap=searchCap,
+        id=ARGS[RANDOM_SEED_ARG]
     )
     myprob.Sigma = projectMatrix(myprob.Sigma, xVal)
     CSV.write(

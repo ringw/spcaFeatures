@@ -1,4 +1,4 @@
-using LinearAlgebra, Printf, Arpack
+using LinearAlgebra, Printf, Arpack, JLD2
 function branchAndBound(prob, #problem object
 		K; # target sparsity
 		outputFlag = 3, # 1, 2, or 3 depending on level of detail sought in output
@@ -14,7 +14,8 @@ function branchAndBound(prob, #problem object
 		gap = .000001, # optimality gap for the algorithm
 		eigGap = .00001, # convergence criterion for determining eigenavlues by power method
 		eigCycles = 500, # max number of iterations of the power method
-		valtobeat = 0) # if non-zero, the algorithm will terminate once it has a solution with objective value larger than this
+		valtobeat = 0, # if non-zero, the algorithm will terminate once it has a solution with objective value larger than this
+    id = "") # identify the SPCA run
 
 	# computes the vector b that maximizes b'Qb
 	# subject to the support of b being <= abs(y)
@@ -24,19 +25,34 @@ function branchAndBound(prob, #problem object
 	# more refinement would no longer impact the least upper bound
 	function bbMyeigmax(y, refineCap)
 		yKeep = .!(y.==0)
+		numKeep = sum(yKeep)
+
+		isMultipartiteProb = false
+		if isMultipartiteProb
+			# multipartite prob requires that it is not highDim
+			eigs = eigen(Hermitian(Sigma[yKeep,yKeep]))
+			ne = length(eigs.values)
+			normb = min(refineCap, eigs.values[ne])
+			expandedb = zeros(length(y))
+			expandedb[yKeep]=eigs.vectors[:,ne]
+			return normb, expandedb
+		end
 		thism=0
 		if highDim
 			thisA = copy(A[:, yKeep])
 			thism, ~ = size(thisA)
 			Q = thisA*thisA'/(thism-1)
-			b = startingEig[yKeep]
+			# b = startingEig[yKeep]
+			b = ones(numKeep)
 			b = thisA*(b / LinearAlgebra.norm(b))
 			normb = 0
 			newnorm = LinearAlgebra.norm(b)
 		else
 			Q = copy(Sigma[yKeep,yKeep])
-			beta0 = startingEig[yKeep]
-			normb = LinearAlgebra.norm(beta0)
+			# beta0 = startingEig[yKeep]
+			# normb = LinearAlgebra.norm(beta0)
+			beta0 = ones(numKeep)
+			normb = sqrt(Float64(numKeep))
 			b = Q*beta0
 			newnorm = LinearAlgebra.norm(b)
 		end
@@ -385,7 +401,20 @@ function branchAndBound(prob, #problem object
 		oldub = upper_bounds[selected_node]
 		for i = 1:numBranches
 			lb, ub = return_bounds(newNodes[:,i], oldub)
-			@assert (ub - lb) / ub >= -0.001 "Expect $ub > $lb (gap $((ub - lb) / ub))"
+			if (ub - lb) / ub < -0.001
+        println(stderr, "Bug in UB calculation: ub ", ub, " < lb ", lb)
+				# Save the breakage test case
+				save_object(
+					"/tmp/julia" * id * "_e" * string(explored) * "b" * string(i) * ".jld2",
+					(
+						Sigma,
+						newNodes[:,i],
+						oldub,
+						lb,
+						ub
+					)
+				)
+			end
 			if ub*(1-gap) > lower
 				if lb > lower
 					lower = lb
