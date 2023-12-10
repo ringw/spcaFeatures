@@ -11,7 +11,9 @@ include("utilities.jl")
 include("branchAndBound.jl")
 include("multiComponents.jl")
 
-using CSV, DataFrames, Random, Tables
+using CSV, DataFrames, LinearAlgebra, Random, Tables
+
+LinearAlgebra.BLAS.set_num_threads(2)
 
 EIGEN_GAP_ARG = 6
 RANDOM_SEED_ARG = 7
