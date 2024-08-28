@@ -1,0 +1,9 @@
+#!/bin/bash
+# Julia Pkg updater as part of R installation (binary package creation) script.
+
+set -e
+
+cd inst
+unset LD_LIBRARY_PATH
+JULIA_DEPOT_PATH=./julia_depot julia --project=. -e "using Pkg" -e "Pkg.update()"
+rm -r ./julia_depot/registries
