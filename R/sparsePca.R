@@ -13,10 +13,18 @@ runif_uint64 <- function() {
   )
 }
 
+#' @importFrom Seurat GetAssayData
+#' @importFrom Seurat VariableFeatures
+#'
 seurat_spca <- function(seurat, assay='RNA', nfeatures=1000, do.correct.elbow = F, ...) {
+  if (exists("LayerData", where="package:Seurat"))
+    scale.data <- Seurat::LayerData(seurat, assay=assay, layer="scale.data")
+  else
+    scale.data <- GetAssayData(scale.data, assay=assay, slot="scale.data")
   # Suppress choosing head of VariableFeatures by passing NA, NULL, or 0.
   if (is.numeric(nfeatures) && as.logical(nfeatures))
-    covar = seurat@misc[[matrix_name]]
+    scale.data <- scale.data[head(VariableFeatures(seurat[[assay]]), nfeatures), ]
+  covar <- tcrossprod(scale.data) / (nrow(scale.data) - 1)
   psd_spca_feature_loadings(covar, ...) %>%
     seurat_spca_from_feature_loadings(seurat, assay, do.correct.elbow)
 }

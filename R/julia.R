@@ -1,6 +1,8 @@
+#' @importFrom withr with_envvar
+#' @importFrom withr with_options
+#'
 julia_spca_open_pipe <- function(
-    mat, output_file, K, D, search_cap, eigen_gap, uint64_seed = NULL
-    ) {
+    mat, output_file, K, D, search_cap, eigen_gap, uint64_seed = NULL) {
   project_dir <- find.package("spcaFeatures")
   julia_depot <- file.path(project_dir, "julia_depot")
   mat_output <- tempfile("cov", fileext = ".csv.gz")
@@ -46,10 +48,15 @@ julia_spca_open_pipe <- function(
   )
 }
 
-run_optimal_spca <- function(mat, K, D, search_cap = 500000, eigen_gap = 0.001, uint64_seed = NULL, cgroup = NULL) {
+#' @importFrom magrittr %>%
+#' @importFrom progress progress_bar
+#'
+run_optimal_spca <- function(
+    mat, K, D, search_cap = 500000, eigen_gap = 0.001, uint64_seed = NULL) {
   output_file <- tempfile("SPCA", fileext = ".csv")
   p <- julia_spca_open_pipe(
-    mat, output_file, K, D, search_cap, eigen_gap, uint64_seed, cgroup)
+    mat, output_file, K, D, search_cap, eigen_gap, uint64_seed
+  )
   num_progress_dots <- 20
 
   # Assume that the total number of ticks is D * num_progress_dots. If one PC
@@ -57,7 +64,6 @@ run_optimal_spca <- function(mat, K, D, search_cap = 500000, eigen_gap = 0.001, 
   # don't jump ahead a full percentage point (value of D).
   num_ticks <- D * num_progress_dots
 
-  # write('Searching the covariance for optimal SPCA', stderr())
   message("Searching the covariance for optimal SPCA")
   prog <- progress_bar$new("SPCA [:bar] :percent :eta", force = T)
 
