@@ -1,4 +1,4 @@
 cd inst
 set JULIA_DEPOT_PATH=./julia_depot
 julia --project=. -e "using Pkg" -e "Pkg.update()"
-rd /s /q ./julia_depot/registries
+rm -r ./julia_depot/registries
