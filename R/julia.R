@@ -42,7 +42,8 @@ julia_spca_open_pipe <- function(
             paste0(" ", uint64_seed)
           )
         ),
-        "rb"
+        "rb",
+        blocking = TRUE
       )
     )
   )
