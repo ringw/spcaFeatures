@@ -18,57 +18,59 @@ julia_spca_open_pipe <- function(
         JULIA_DEPOT_PATH = file.path(project_dir, "julia_depot"),
         LD_LIBRARY_PATH = NA
       ),
-      message(
-paste0(
-          "julia --project=\"",
-          project_dir,
-          "\" \"",
-          file.path(project_dir, "julia_project", "SPCA.jl"),
-          "\" \"",
-          mat_output,
-          "\" \"",
-          output_file,
-          "\" ",
-          K,
-          " ",
-          D,
-          " ",
-          search_cap,
-          " ",
-          eigen_gap,
-          ifelse(
-            is.null(uint64_seed),
-            "",
-            paste0(" ", uint64_seed)
+      {
+        message(
+          paste0(
+            "julia --project=\"",
+            project_dir,
+            "\" \"",
+            file.path(project_dir, "julia_project", "SPCA.jl"),
+            "\" \"",
+            mat_output,
+            "\" \"",
+            output_file,
+            "\" ",
+            K,
+            " ",
+            D,
+            " ",
+            search_cap,
+            " ",
+            eigen_gap,
+            ifelse(
+              is.null(uint64_seed),
+              "",
+              paste0(" ", uint64_seed)
+            )
           )
         )
-      )
-      p <- pipe(
-        paste0(
-          "julia --project=\"",
-          project_dir,
-          "\" \"",
-          file.path(project_dir, "julia_project", "SPCA.jl"),
-          "\" \"",
-          mat_output,
-          "\" \"",
-          output_file,
-          "\" ",
-          K,
-          " ",
-          D,
-          " ",
-          search_cap,
-          " ",
-          eigen_gap,
-          ifelse(
-            is.null(uint64_seed),
-            "",
-            paste0(" ", uint64_seed)
-          )
-        ),
-        "rb"
-      )
+        p <- pipe(
+          paste0(
+            "julia --project=\"",
+            project_dir,
+            "\" \"",
+            file.path(project_dir, "julia_project", "SPCA.jl"),
+            "\" \"",
+            mat_output,
+            "\" \"",
+            output_file,
+            "\" ",
+            K,
+            " ",
+            D,
+            " ",
+            search_cap,
+            " ",
+            eigen_gap,
+            ifelse(
+              is.null(uint64_seed),
+              "",
+              paste0(" ", uint64_seed)
+            )
+          ),
+          "rb"
+        )
+      }
     )
   )
 }
