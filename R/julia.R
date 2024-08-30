@@ -13,16 +13,18 @@ julia_spca_open_pipe <- function(
   write.csv(mat, csv_conn, row.names = F)
   close(csv_conn)
 
+  julia_depot_path <- file.path(project_dir, "julia_depot")
   if (.Platform$OS.type == "windows") {
     output_file <- output_file %>% str_replace_all("\\\\", "/")
     mat_output <- mat_output %>% str_replace_all("\\\\", "/")
+    julia_depot_path <- NA
   }
 
   with_options(
     list(scipen = 100),
     with_envvar(
       c(
-        JULIA_DEPOT_PATH = file.path(project_dir, "julia_depot"),
+        JULIA_DEPOT_PATH = julia_depot_path,
         LD_LIBRARY_PATH = NA
       ),
       {
