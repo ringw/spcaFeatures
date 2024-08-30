@@ -1,3 +1,2 @@
 cd inst
-set JULIA_DEPOT_PATH=./julia_depot
-julia --project=. -e "using Pkg" -e "Pkg.update()"
+julia --project=. -e "DEPOT_PATH=[\"./julia_depot\"]" -e "using Pkg" -e "Pkg.update()"
