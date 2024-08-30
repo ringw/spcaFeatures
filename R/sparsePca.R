@@ -14,17 +14,24 @@ runif_uint64 <- function() {
   )
 }
 
-#' @importFrom Seurat GetAssayData
 #' @importFrom Seurat VariableFeatures
+#' @importFrom SeuratObject GetAssayData
 #'
-seurat_spca <- function(seurat, assay = "RNA", nfeatures = 1000, do.correct.elbow = F, ...) {
-  if (exists("LayerData", where = "package:Seurat")) {
-    scale.data <- Seurat::LayerData(seurat, assay = assay, layer = "scale.data")
+seurat_spca <- function(
+    seurat, assay = "RNA", nfeatures = 1000, do.correct.elbow = F, ...) {
+  if (exists("LayerData", where = "package:SeuratObject")) {
+    scale.data <- SeuratObject::LayerData(
+      seurat,
+      assay = assay, layer = "scale.data"
+    )
   } else {
     scale.data <- GetAssayData(seurat, assay = assay, slot = "scale.data")
   }
-  if (!length(scale.data))
-    stop("Seurat is missing scale.data. Run NormalizeData, FindVariableFeatures, ScaleData.")
+  if (!length(scale.data)) {
+    stop(
+      "Seurat is missing scale.data. Run NormalizeData, FindVariableFeatures, ScaleData."
+    )
+  }
   # Suppress choosing head of VariableFeatures by passing NA, NULL, or 0.
   if (is.numeric(nfeatures) && as.logical(nfeatures)) {
     scale.data <- scale.data[head(VariableFeatures(seurat[[assay]]), nfeatures), ]
@@ -89,14 +96,12 @@ seurat_spca_from_feature_loadings <- function(
             dataMeans
           } else {
             0
-          }
-        ) / (
+          }) / (
           if (scale_data_command$do.scale) {
             dataSds
           } else {
             1
-          }
-        )
+          })
       )
   )
   cell_embeddings <- t(scale_data_from_zero) %*% feature_loadings
@@ -164,6 +169,6 @@ seurat_spca_from_feature_loadings_nocenter <- function(
 #' @export
 #'
 RunSparsePCA <- function(seurat, assay = "RNA", nfeatures = 1000, do.correct.elbow = F, ...) {
-  seurat[["spca"]] <- seurat_spca(seurat, assay=assay, nfeatures=nfeatures, do.correct.elbow=do.correct.elbow, ...)
+  seurat[["spca"]] <- seurat_spca(seurat, assay = assay, nfeatures = nfeatures, do.correct.elbow = do.correct.elbow, ...)
   seurat
 }

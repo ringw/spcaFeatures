@@ -14,5 +14,6 @@ Imports:
     matrixStats,
     progress,
     Seurat,
+    SeuratObject,
     withr
 SystemRequirements: julia >= v1.6.7 (on PATH)
