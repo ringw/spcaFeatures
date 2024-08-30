@@ -13,5 +13,5 @@ Imports:
     magrittr,
     matrixStats,
     progress,
-    Seurat (<= 4.4.0),
+    Seurat,
     withr
