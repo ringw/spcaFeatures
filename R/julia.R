@@ -1,3 +1,5 @@
+#' @importFrom magrittr %>%
+#' @importFrom stringr str_replace_all
 #' @importFrom withr with_envvar
 #' @importFrom withr with_options
 #'
@@ -10,6 +12,11 @@ julia_spca_open_pipe <- function(
   csv_conn <- gzcon(csv_gz_conn)
   write.csv(mat, csv_conn, row.names = F)
   close(csv_conn)
+
+  if (.Platform$OS.type == "windows") {
+    output_file <- output_file %>% str_replace_all("\\\\", "/")
+    mat_output <- mat_output %>% str_replace_all("\\\\", "/")
+  }
 
   with_options(
     list(scipen = 100),
