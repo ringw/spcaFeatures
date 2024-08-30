@@ -88,8 +88,21 @@ seurat_spca_from_feature_loadings <- function(
   } else {
     scale_data_command <- list(do.center = TRUE, do.scale = TRUE)
   }
+  if (exists("LayerData", where = "package:SeuratObject")) {
+    scale.data <- SeuratObject::LayerData(
+      seurat,
+      assay = assay, layer = "scale.data"
+    )
+  } else {
+    scale.data <- GetAssayData(seurat, assay = assay, slot = "scale.data")
+  }
+  if (!length(scale.data)) {
+    stop(
+      "Seurat is missing scale.data. Run NormalizeData, FindVariableFeatures, ScaleData."
+    )
+  }
   scale_data_from_zero <- (
-    seurat[[assay]]@scale.data[rownames(feature_loadings), ]
+    scale.data[rownames(feature_loadings), ]
     + (
         (
           if (scale_data_command$do.center) {
