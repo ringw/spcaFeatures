@@ -36,7 +36,7 @@ seurat_spca <- function(
   if (is.numeric(nfeatures) && as.logical(nfeatures)) {
     scale.data <- scale.data[head(VariableFeatures(seurat[[assay]]), nfeatures), ]
   }
-  covar <- tcrossprod(scale.data) / (nrow(scale.data) - 1)
+  covar <- tcrossprod(scale.data) / (ncol(scale.data) - 1)
   psd_spca_feature_loadings(covar, ...) %>%
     seurat_spca_from_feature_loadings(seurat, assay, do.correct.elbow)
 }
@@ -62,8 +62,8 @@ psd_spca_feature_loadings <- function(
   t(feature_loadings)
 }
 
-#' @importFrom matrixStats rowMeans2
-#' @importFrom matrixStats rowSds
+#' @importFrom matrixStats colMeans2
+#' @importFrom matrixStats colSds
 #' @importFrom Seurat CreateDimReducObject
 #' @importFrom Seurat FetchData
 #' @importFrom stringr str_glue
@@ -122,42 +122,6 @@ seurat_spca_from_feature_loadings <- function(
     obj@cell.embeddings <- obj@cell.embeddings[, obj.perm, drop = FALSE]
     colnames(obj@cell.embeddings) <- obj.names
     obj@feature.loadings <- obj@feature.loadings[, obj.perm, drop = FALSE]
-    colnames(obj@feature.loadings) <- obj.names
-    obj@stdev <- obj@stdev[obj.perm]
-    names(obj@stdev) <- obj.names
-  }
-  obj
-}
-
-seurat_spca_from_feature_loadings_nocenter <- function(
-    feature_loadings, seurat, assay, do.correct.elbow) {
-  colnames(feature_loadings) <- paste0("SPARSE_", seq(ncol(feature_loadings)))
-  dataMeans <- rowMeans(
-    seurat[[assay]]@data[rownames(feature_loadings), ]
-  )
-  dataSds <- rowSds(
-    seurat[[assay]]@data[rownames(feature_loadings), ]
-  )
-  # data should be nonnegative, so we will update sd to a pseudo-sd of "1" if
-  # the mean is 0.
-  dataSds <- dataSds %>% replace(dataMeans == 0, 1)
-  cell_embeddings <- t(seurat[[assay]]@scale.data[rownames(feature_loadings), ]) %*% feature_loadings
-  stdev <- colSds(cell_embeddings)
-  obj <- CreateDimReducObject(
-    cell_embeddings,
-    feature_loadings,
-    stdev = stdev,
-    assay = assay,
-    key = "SPARSE_"
-  )
-  if (do.correct.elbow) {
-    obj.perm <- order(obj@stdev, decreasing = T)
-    obj.names <- colnames(obj@cell.embeddings)
-    # un-permuted feature loadings
-    obj@misc$search.feature.loadings <- obj@feature.loadings
-    obj@cell.embeddings <- obj@cell.embeddings[, obj.perm]
-    colnames(obj@cell.embeddings) <- obj.names
-    obj@feature.loadings <- obj@feature.loadings[, obj.perm]
     colnames(obj@feature.loadings) <- obj.names
     obj@stdev <- obj@stdev[obj.perm]
     names(obj@stdev) <- obj.names
