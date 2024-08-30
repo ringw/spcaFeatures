@@ -1,5 +1,3 @@
-#' @importFrom magrittr %>%
-#' @importFrom stringr str_replace_all
 #' @importFrom withr with_envvar
 #' @importFrom withr with_options
 #'
@@ -15,8 +13,6 @@ julia_spca_open_pipe <- function(
 
   julia_depot_path <- file.path(project_dir, "julia_depot")
   if (.Platform$OS.type == "windows") {
-    output_file <- output_file %>% str_replace_all("\\\\", "/")
-    mat_output <- mat_output %>% str_replace_all("\\\\", "/")
     julia_depot_path <- NA
   }
 
